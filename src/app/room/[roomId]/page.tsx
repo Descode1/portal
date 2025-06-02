@@ -6,7 +6,8 @@ import { sendSignal, subscribeToSignals } from '@/app/Lib/signaling'
 import { supabase } from '@/app/Lib/supabaseClient'
 
 export default function RoomPage() {
-  const { roomId } = useParams<{ roomId: string }>()
+  const params = useParams()
+  const roomId = params?.roomId as string
   const localVideoRef = useRef<HTMLVideoElement>(null)
   const remoteVideoRef = useRef<HTMLVideoElement>(null)
   const pcRef = useRef<RTCPeerConnection | null>(null)
@@ -14,8 +15,9 @@ export default function RoomPage() {
   const [sender, setSender] = useState<string | null>(null)
 
   useEffect(() => {
+    if (!roomId) return
+
     const init = async () => {
-      // Step 1: Determine if an offer already exists
       const { data: existingOffers } = await supabase
         .from('signals')
         .select('*')
@@ -49,23 +51,25 @@ export default function RoomPage() {
       }
 
       subscribeToSignals(roomId, mySender, async (type, data) => {
-        if (!pc) return
+  if (!pc) return
 
-        if (type === 'offer') {
-          await pc.setRemoteDescription(new RTCSessionDescription(data))
-          const answer = await pc.createAnswer()
-          await pc.setLocalDescription(answer)
-          sendSignal(roomId, mySender, 'answer', answer)
-        } else if (type === 'answer') {
-          await pc.setRemoteDescription(new RTCSessionDescription(data))
-        } else if (type === 'candidate') {
-          try {
-            await pc.addIceCandidate(new RTCIceCandidate(data))
-          } catch (err) {
-            console.error('Error adding ICE candidate', err)
-          }
-        }
-      })
+  if (type === 'offer' || type === 'answer') {
+    await pc.setRemoteDescription(new RTCSessionDescription(data as RTCSessionDescriptionInit))
+
+    if (type === 'offer') {
+      const answer = await pc.createAnswer()
+      await pc.setLocalDescription(answer)
+      sendSignal(roomId, mySender, 'answer', answer)
+    }
+  } else if (type === 'candidate') {
+    try {
+      await pc.addIceCandidate(new RTCIceCandidate(data as RTCIceCandidateInit))
+    } catch (err) {
+      console.error('Error adding ICE candidate', err)
+    }
+  }
+})
+
 
       if (isOfferer) {
         const offer = await pc.createOffer()
