@@ -7,6 +7,7 @@ interface SignalPayload {
   sender: string
   type: SignalType
   data: RTCSessionDescriptionInit | RTCIceCandidateInit
+  created_at?: string
 }
 
 export async function sendSignal(
@@ -22,15 +23,24 @@ export async function sendSignal(
     data,
   }
 
-  await supabase.from('signals').insert([payload])
+  console.log(`Sending ${type} signal:`, payload)
+
+  const { error } = await supabase.from('signals').insert([payload])
+  
+  if (error) {
+    console.error('Error sending signal:', error)
+    throw error
+  }
 }
 
 export function subscribeToSignals(
   roomId: string,
   selfSender: string,
-  callback: (type: SignalType, data: RTCSessionDescriptionInit | RTCIceCandidateInit) => void
+  callback: (type: SignalType, data: RTCSessionDescriptionInit | RTCIceCandidateInit, sender: string) => void
 ) {
-  return supabase
+  console.log(`Subscribing to signals for room ${roomId} as ${selfSender}`)
+
+  const channel = supabase
     .channel('room-' + roomId)
     .on(
       'postgres_changes',
@@ -42,10 +52,19 @@ export function subscribeToSignals(
       },
       payload => {
         const signal = payload.new as SignalPayload
+        console.log('Received signal:', signal)
+        
+        // Only process signals from other users
         if (signal.sender !== selfSender) {
-          callback(signal.type, signal.data)
+          callback(signal.type, signal.data, signal.sender)
+        } else {
+          console.log('Ignoring own signal')
         }
       }
     )
-    .subscribe()
+    .subscribe((status) => {
+      console.log('Subscription status:', status)
+    })
+
+  return channel
 }
