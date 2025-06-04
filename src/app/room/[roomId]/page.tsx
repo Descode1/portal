@@ -12,8 +12,8 @@ export default function RoomPage() {
   const remoteVideoRef = useRef<HTMLVideoElement>(null)
   const pcRef = useRef<RTCPeerConnection | null>(null)
   const localStreamRef = useRef<MediaStream | null>(null)
-  const [sender, setSender] = useState<string | null>(null)
-  const [isInitialized, setIsInitialized] = useState(false)
+  const [, setSender] = useState<string | null>(null)
+  const [, setIsInitialized] = useState(false)
 
   useEffect(() => {
     if (!roomId) return
@@ -66,7 +66,7 @@ export default function RoomPage() {
           }
         }
         // Set up signaling subscription BEFORE creating/handling offers
-        const subscription = subscribeToSignals(roomId, mySender, async (type, data, signalSender) => {
+        const subscription = subscribeToSignals(roomId, mySender, async (type, data) => {
           try {
             if (type === 'offer') {
               await pc.setRemoteDescription(new RTCSessionDescription(data as RTCSessionDescriptionInit))
