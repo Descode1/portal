@@ -30,7 +30,7 @@ A real-time video chat app built with Next.js that connects two users in the sam
    - Run this SQL to create the signals table:
    ```sql
    CREATE TABLE signals (
-     id SERIAL PRIMARY KEY,
+     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
      room_id TEXT NOT NULL,
      sender TEXT NOT NULL,
      type TEXT NOT NULL,
