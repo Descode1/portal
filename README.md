@@ -1,36 +1,59 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Portal
 
-## Getting Started
+A simple peer-to-peer video chat application where users can join rooms and video call each other directly through their browsers.
 
-First, run the development server:
+## What it is
+A real-time video chat app built with Next.js that connects two users in the same room for direct video communication.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## What it does
+- Create or join video chat rooms using room IDs
+- Stream video and audio between users in real-time
+- Connect peers directly without going through a server
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## What makes it run
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Tech Stack
+- **Next.js** - React framework
+- **WebRTC** - Peer-to-peer video/audio streaming
+- **Supabase** - Real-time signaling database
+- **Tailwind CSS** - Styling
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### Quick Setup
 
-## Learn More
+1. **Clone and install**
+   ```bash
+   npm install
+   ```
 
-To learn more about Next.js, take a look at the following resources:
+2. **Setup Supabase**
+   - Create a Supabase project
+   - Run this SQL to create the signals table:
+   ```sql
+   CREATE TABLE signals (
+     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+     room_id TEXT NOT NULL,
+     sender TEXT NOT NULL,
+     type TEXT NOT NULL,
+     data JSONB NOT NULL,
+     created_at TIMESTAMP DEFAULT NOW()
+   );
+   ```
+   - Enable real-time for the `signals` table
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+3. **Add environment variables**
+   ```env
+   NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+   NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_key
+   ```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+4. **Run the app**
+   ```bash
+   npm run dev
+   ```
 
-## Deploy on Vercel
+5. **Test it**
+   - Go to `localhost:3000/room/[roomId]` in two browser tabs
+   - Allow camera/microphone access
+   - You should see video streams in both tabs
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+That's it! The app uses WebRTC for direct video streaming and Supabase for coordinating the initial connection between peers.
