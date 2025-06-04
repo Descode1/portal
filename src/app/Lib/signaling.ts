@@ -22,11 +22,7 @@ export async function sendSignal(
     type,
     data,
   }
-
-  console.log(`Sending ${type} signal:`, payload)
-
   const { error } = await supabase.from('signals').insert([payload])
-  
   if (error) {
     console.error('Error sending signal:', error)
     throw error
@@ -52,19 +48,13 @@ export function subscribeToSignals(
       },
       payload => {
         const signal = payload.new as SignalPayload
-        console.log('Received signal:', signal)
-        
-        // Only process signals from other users
         if (signal.sender !== selfSender) {
           callback(signal.type, signal.data, signal.sender)
-        } else {
-          console.log('Ignoring own signal')
         }
       }
     )
     .subscribe((status) => {
       console.log('Subscription status:', status)
     })
-
   return channel
 }
