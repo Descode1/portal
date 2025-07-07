@@ -14,14 +14,14 @@ export async function sendSignal(
   roomId: string,
   sender: string,
   type: SignalType,
-  data: RTCSessionDescriptionInit | RTCIceCandidateInit
-): Promise<void> {
+  data: RTCSessionDescriptionInit | RTCIceCandidateInit 
+): Promise <void> {
   const payload: SignalPayload = {
     room_id: roomId,
     sender,
     type,
     data,
-  }
+  } 
   const { error } = await supabase.from('signals').insert([payload])
   if (error) {
     console.error('Error sending signal:', error)

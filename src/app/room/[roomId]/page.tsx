@@ -46,26 +46,22 @@ export default function RoomPage() {
         })
         pcRef.current = pc
 
-        // Add local stream tracks
         localStream.getTracks().forEach(track => {
           pc.addTrack(track, localStream)
         })
 
-        // Handle ICE candidates
         pc.onicecandidate = event => {
           if (event.candidate) {
             sendSignal(roomId, mySender, 'candidate', event.candidate)
           }
         }
 
-        // Handle remote stream
         pc.ontrack = event => {
           const [remoteStream] = event.streams
           if (remoteVideoRef.current) {
             remoteVideoRef.current.srcObject = remoteStream
           }
         }
-        // Set up signaling subscription BEFORE creating/handling offers
         const subscription = subscribeToSignals(roomId, mySender, async (type, data) => {
           try {
             if (type === 'offer') {
